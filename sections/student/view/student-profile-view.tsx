@@ -3,17 +3,8 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-
-interface Student {
-  id: number
-  full_name: string
-  email: string
-  age: number
-  cgpa: number
-  is_active: boolean
-  joined_date: string
-  created_at: string
-}
+import Link from "next/link"
+import { Student } from "@/types/student"
 
 export default function StudentProfileView() {
   const { id } = useParams()
@@ -33,7 +24,7 @@ export default function StudentProfileView() {
 
   useEffect(() => {
     fetchStudent()
-  }, [id])  
+  }, [id])
 
   if (!student) {
     return <div>Loading...</div>
@@ -41,6 +32,12 @@ export default function StudentProfileView() {
 
   return (
     <div className="space-y-2 p-6">
+      <Link
+        href="/students"
+        className="mb-4 inline-block text-blue-500 hover:underline"
+      >
+        &larr; Back to Students
+      </Link>
       <h1 className="text-2xl font-bold">{student.full_name}</h1>
 
       <p>ID: {student.id}</p>

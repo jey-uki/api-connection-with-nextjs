@@ -11,21 +11,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import Link from "next/link";
-
-type Student = {
-  id: number;
-  full_name: string;
-  email: string;
-  cgpa: number;
-}
+import Link from "next/link"
+import { Student } from "@/types/student"
 
 export default function StudentListView() {
   const [students, setStudents] = useState<Student[]>([])
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get("https://jey-student-api.up.railway.app/api/students")
+      const response = await axios.get(
+        "https://jey-student-api.up.railway.app/api/students"
+      )
       setStudents(response.data.students)
     } catch (error) {
       console.error("Error fetching students:", error)
@@ -38,7 +34,10 @@ export default function StudentListView() {
 
   return (
     <div className="p-6">
-      <Link href="/" className="text-blue-500 hover:underline mb-4 inline-block">
+      <Link
+        href="/"
+        className="mb-4 inline-block text-blue-500 hover:underline"
+      >
         &larr; Back to Home
       </Link>
       <Table>
@@ -49,6 +48,7 @@ export default function StudentListView() {
             <TableHead>Full Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead className="text-right">CGPA</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -58,6 +58,14 @@ export default function StudentListView() {
               <TableCell>{student.full_name}</TableCell>
               <TableCell>{student.email}</TableCell>
               <TableCell className="text-right">{student.cgpa}</TableCell>
+              <TableCell className="text-right">
+                <Link
+                  href={`/students/${student.id}`}
+                  className="text-blue-500 hover:underline"
+                >
+                  View
+                </Link>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -65,4 +73,3 @@ export default function StudentListView() {
     </div>
   )
 }
-
