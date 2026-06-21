@@ -1,7 +1,7 @@
 "use client"
 
-import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import axios from "axios"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/card"
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -25,24 +24,17 @@ import {
 import { format } from "date-fns"
 
 import { Calendar } from "@/components/ui/calendar"
+import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Input } from "@/components/ui/input"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group"
 
 const formSchema = z.object({
   fullName: z
     .string("Full name is required.")
-    .min(2, "Full name must be at least 2 characters.")
-    .max(32, "Full name must be at most 32 characters."),
+    .min(2, "Full name must be at least 2 characters."),
   email: z
     .string("Email is required.")
     .email("Please enter a valid email address."),
@@ -61,34 +53,38 @@ export default function StudentNewEditForm() {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast("You submitted the following values:", {
-      // sonner ExternalToast accepts 'description' for additional JSX content
-      description: (
-        <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    })
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    const payload = {
+      full_name: data.fullName,
+      email: data.email,
+      age: data.age ? parseInt(data.age) : undefined,
+      joined_date: format(data.joinDate, "yyyy-MM-dd"),
+    }
+
+    // console.log("Prepared payload for submission:", payload)
+
+    try {
+      await axios.post(
+        "https://jey-student-api.up.railway.app/api/students",
+        payload
+      )
+      // console.log("Submitting student data:", payload)
+      toast.success("Student information submitted successfully!")
+      form.reset()
+    } catch (errors) {
+      console.error("Error submitting student data:", errors)
+      toast.error("Failed to submit student information.")
+    }
   }
 
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Add New Student</CardTitle>
-        <CardDescription>
-          Enter the details of the new student.
-        </CardDescription>
+        <CardTitle>Student Information</CardTitle>
+        <CardDescription>Please fill in the details below.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="form-rhf-student" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
               name="fullName"
@@ -203,7 +199,7 @@ export default function StudentNewEditForm() {
           <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
-          <Button type="submit" form="form-rhf-demo">
+          <Button type="submit" form="form-rhf-student">
             Submit
           </Button>
         </Field>
