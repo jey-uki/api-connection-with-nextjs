@@ -22,6 +22,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { format } from "date-fns"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Student } from "@/types/student"
 
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
@@ -42,7 +45,13 @@ const formSchema = z.object({
   joinDate: z.date(),
 })
 
-export default function StudentNewEditForm() {
+interface Props {
+  currentStudent?: Student
+}
+
+export default function StudentNewEditForm({ currentStudent }: Props = {}) {
+  const router = useRouter()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,6 +62,54 @@ export default function StudentNewEditForm() {
     },
   })
 
+  useEffect(() => {
+    if (currentStudent) {
+      let parsedJoinDate: Date | undefined = undefined
+      if (currentStudent.joined_date) {
+        const parts = currentStudent.joined_date.split("-")
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10)
+          const month = parseInt(parts[1], 10) - 1
+          const day = parseInt(parts[2], 10)
+          parsedJoinDate = new Date(year, month, day)
+        } else {
+          parsedJoinDate = new Date(currentStudent.joined_date)
+        }
+      }
+      form.reset({
+        fullName: currentStudent.full_name,
+        email: currentStudent.email,
+        age: currentStudent.age ? String(currentStudent.age) : "",
+        joinDate: parsedJoinDate,
+      })
+    }
+  }, [currentStudent, form])
+
+  const handleReset = () => {
+    if (currentStudent) {
+      let parsedJoinDate: Date | undefined = undefined
+      if (currentStudent.joined_date) {
+        const parts = currentStudent.joined_date.split("-")
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10)
+          const month = parseInt(parts[1], 10) - 1
+          const day = parseInt(parts[2], 10)
+          parsedJoinDate = new Date(year, month, day)
+        } else {
+          parsedJoinDate = new Date(currentStudent.joined_date)
+        }
+      }
+      form.reset({
+        fullName: currentStudent.full_name,
+        email: currentStudent.email,
+        age: currentStudent.age ? String(currentStudent.age) : "",
+        joinDate: parsedJoinDate,
+      })
+    } else {
+      form.reset()
+    }
+  }
+
   async function onSubmit(data: z.infer<typeof formSchema>) {
     const payload = {
       full_name: data.fullName,
@@ -61,27 +118,42 @@ export default function StudentNewEditForm() {
       joined_date: format(data.joinDate, "yyyy-MM-dd"),
     }
 
-    // console.log("Prepared payload for submission:", payload)
-
     try {
-      await axios.post(
-        "https://jey-student-api.up.railway.app/api/students",
-        payload
-      )
-      // console.log("Submitting student data:", payload)
-      toast.success("Student information submitted successfully!")
-      form.reset()
+      if (currentStudent) {
+        await axios.put(
+          `https://jey-student-api.up.railway.app/api/students/${currentStudent.id}`,
+          payload
+        )
+        toast.success("Student information updated successfully!")
+        router.push("/students")
+      } else {
+        await axios.post(
+          "https://jey-student-api.up.railway.app/api/students",
+          payload
+        )
+        toast.success("Student information submitted successfully!")
+        form.reset()
+        router.push("/students")
+      }
     } catch (errors) {
       console.error("Error submitting student data:", errors)
-      toast.error("Failed to submit student information.")
+      toast.error(
+        currentStudent
+          ? "Failed to update student information."
+          : "Failed to submit student information."
+      )
     }
   }
 
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Student Information</CardTitle>
-        <CardDescription>Please fill in the details below.</CardDescription>
+        <CardTitle>{currentStudent ? "Edit Student" : "Student Information"}</CardTitle>
+        <CardDescription>
+          {currentStudent
+            ? "Update the student details below."
+            : "Please fill in the details below."}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form id="form-rhf-student" onSubmit={form.handleSubmit(onSubmit)}>
@@ -196,11 +268,11 @@ export default function StudentNewEditForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={handleReset}>
             Reset
           </Button>
           <Button type="submit" form="form-rhf-student">
-            Submit
+            {currentStudent ? "Update" : "Submit"}
           </Button>
         </Field>
       </CardFooter>

@@ -59,12 +59,20 @@ export default function StudentListView() {
               <TableCell>{student.email}</TableCell>
               <TableCell className="text-right">{student.cgpa}</TableCell>
               <TableCell className="text-right">
-                <Link
-                  href={`/students/${student.id}`}
-                  className="text-blue-500 hover:underline"
-                >
-                  View
-                </Link>
+                <div className="flex justify-end gap-3">
+                  <Link
+                    href={`/students/${student.id}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    View
+                  </Link>
+                  <Link
+                    href={`/students/${student.id}/edit`}
+                    className="text-amber-600 hover:underline"
+                  >
+                    Edit
+                  </Link>
+                </div>
               </TableCell>
             </TableRow>
           ))}

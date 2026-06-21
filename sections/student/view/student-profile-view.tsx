@@ -32,12 +32,21 @@ export default function StudentProfileView() {
 
   return (
     <div className="space-y-2 p-6">
-      <Link
-        href="/students"
-        className="mb-4 inline-block text-blue-500 hover:underline"
-      >
-        &larr; Back to Students
-      </Link>
+      <div className="flex gap-4 mb-4 items-center">
+        <Link
+          href="/students"
+          className="text-blue-500 hover:underline"
+        >
+          &larr; Back to Students
+        </Link>
+        <span className="text-gray-300">|</span>
+        <Link
+          href={`/students/${student.id}/edit`}
+          className="text-amber-600 hover:underline"
+        >
+          Edit Profile
+        </Link>
+      </div>
       <h1 className="text-2xl font-bold">{student.full_name}</h1>
 
       <p>ID: {student.id}</p>
