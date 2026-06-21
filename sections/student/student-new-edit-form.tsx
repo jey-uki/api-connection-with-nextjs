@@ -1,7 +1,7 @@
 "use client"
 
-import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import axios from "axios"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
@@ -17,32 +17,27 @@ import {
 } from "@/components/ui/card"
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
 import { format } from "date-fns"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Student } from "@/types/student"
 
 import { Calendar } from "@/components/ui/calendar"
+import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Input } from "@/components/ui/input"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group"
 
 const formSchema = z.object({
   fullName: z
     .string("Full name is required.")
-    .min(2, "Full name must be at least 2 characters.")
-    .max(32, "Full name must be at most 32 characters."),
+    .min(2, "Full name must be at least 2 characters."),
   email: z
     .string("Email is required.")
     .email("Please enter a valid email address."),
@@ -50,7 +45,13 @@ const formSchema = z.object({
   joinDate: z.date(),
 })
 
-export default function StudentNewEditForm() {
+interface Props {
+  currentStudent?: Student
+}
+
+export default function StudentNewEditForm({ currentStudent }: Props = {}) {
+  const router = useRouter()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,34 +62,101 @@ export default function StudentNewEditForm() {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast("You submitted the following values:", {
-      // sonner ExternalToast accepts 'description' for additional JSX content
-      description: (
-        <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    })
+  useEffect(() => {
+    if (currentStudent) {
+      let parsedJoinDate: Date | undefined = undefined
+      if (currentStudent.joined_date) {
+        const parts = currentStudent.joined_date.split("-")
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10)
+          const month = parseInt(parts[1], 10) - 1
+          const day = parseInt(parts[2], 10)
+          parsedJoinDate = new Date(year, month, day)
+        } else {
+          parsedJoinDate = new Date(currentStudent.joined_date)
+        }
+      }
+      form.reset({
+        fullName: currentStudent.full_name,
+        email: currentStudent.email,
+        age: currentStudent.age ? String(currentStudent.age) : "",
+        joinDate: parsedJoinDate,
+      })
+    }
+  }, [currentStudent, form])
+
+  const handleReset = () => {
+    if (currentStudent) {
+      let parsedJoinDate: Date | undefined = undefined
+      if (currentStudent.joined_date) {
+        const parts = currentStudent.joined_date.split("-")
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10)
+          const month = parseInt(parts[1], 10) - 1
+          const day = parseInt(parts[2], 10)
+          parsedJoinDate = new Date(year, month, day)
+        } else {
+          parsedJoinDate = new Date(currentStudent.joined_date)
+        }
+      }
+      form.reset({
+        fullName: currentStudent.full_name,
+        email: currentStudent.email,
+        age: currentStudent.age ? String(currentStudent.age) : "",
+        joinDate: parsedJoinDate,
+      })
+    } else {
+      form.reset()
+    }
+  }
+
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    const payload = {
+      full_name: data.fullName,
+      email: data.email,
+      age: data.age ? parseInt(data.age) : undefined,
+      joined_date: format(data.joinDate, "yyyy-MM-dd"),
+    }
+
+    try {
+      if (currentStudent) {
+        await axios.put(
+          `https://jey-student-api.up.railway.app/api/students/${currentStudent.id}`,
+          payload
+        )
+        toast.success("Student information updated successfully!")
+        router.push("/students")
+      } else {
+        await axios.post(
+          "https://jey-student-api.up.railway.app/api/students",
+          payload
+        )
+        toast.success("Student information submitted successfully!")
+        form.reset()
+        router.push("/students")
+      }
+    } catch (errors) {
+      console.error("Error submitting student data:", errors)
+      toast.error(
+        currentStudent
+          ? "Failed to update student information."
+          : "Failed to submit student information."
+      )
+    }
   }
 
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Add New Student</CardTitle>
+        <CardTitle>{currentStudent ? "Edit Student" : "Student Information"}</CardTitle>
         <CardDescription>
-          Enter the details of the new student.
+          {currentStudent
+            ? "Update the student details below."
+            : "Please fill in the details below."}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="form-rhf-student" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
               name="fullName"
@@ -200,11 +268,11 @@ export default function StudentNewEditForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={handleReset}>
             Reset
           </Button>
-          <Button type="submit" form="form-rhf-demo">
-            Submit
+          <Button type="submit" form="form-rhf-student">
+            {currentStudent ? "Update" : "Submit"}
           </Button>
         </Field>
       </CardFooter>
