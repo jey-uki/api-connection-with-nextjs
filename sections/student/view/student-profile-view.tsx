@@ -40,19 +40,17 @@ export default function StudentProfileView() {
     }
   }
 
-  const fetchStudent = async () => {
-    try {
-      const response = await axios.get(
-        `https://jey-student-api.up.railway.app/api/students/${id}`
-      )
-      setStudent(response.data.student)
-    } catch (error) {
-      console.error("Error fetching student:", error)
-    }
-  }
-
   useEffect(() => {
-    fetchStudent()
+    if (id) {
+      axios
+        .get(`https://jey-student-api.up.railway.app/api/students/${id}`)
+        .then((response) => {
+          setStudent(response.data.student)
+        })
+        .catch((error) => {
+          console.error("Error fetching student:", error)
+        })
+    }
   }, [id])
 
   if (!student) {

@@ -59,7 +59,14 @@ export default function StudentListView() {
   }
 
   useEffect(() => {
-    fetchStudents()
+    axios
+      .get("https://jey-student-api.up.railway.app/api/students")
+      .then((response) => {
+        setStudents(response.data.students)
+      })
+      .catch((error) => {
+        console.error("Error fetching students:", error)
+      })
   }, [])
 
   return (
