@@ -1,6 +1,6 @@
 "use client"
 
-import axios from "axios"
+import { getStudent, deleteStudent } from "@/services/student"
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -28,9 +28,7 @@ export default function StudentProfileView() {
     if (!student) return
     setIsDeleting(true)
     try {
-      await axios.delete(
-        `https://jey-student-api.up.railway.app/api/students/${student.id}`
-      )
+      await deleteStudent(student.id)
       toast.success(`Student "${student.full_name}" deleted successfully!`)
       router.push("/students")
     } catch (error) {
@@ -42,10 +40,9 @@ export default function StudentProfileView() {
 
   useEffect(() => {
     if (id) {
-      axios
-        .get(`https://jey-student-api.up.railway.app/api/students/${id}`)
-        .then((response) => {
-          setStudent(response.data.student)
+      getStudent(id as string)
+        .then((data) => {
+          setStudent(data.student)
         })
         .catch((error) => {
           console.error("Error fetching student:", error)
@@ -59,11 +56,8 @@ export default function StudentProfileView() {
 
   return (
     <div className="space-y-2 p-6">
-      <div className="flex gap-4 mb-4 items-center">
-        <Link
-          href="/students"
-          className="text-blue-500 hover:underline"
-        >
+      <div className="mb-4 flex items-center gap-4">
+        <Link href="/students" className="text-blue-500 hover:underline">
           &larr; Back to Students
         </Link>
         <span className="text-gray-300">|</span>
@@ -76,7 +70,7 @@ export default function StudentProfileView() {
         <span className="text-gray-300">|</span>
         <button
           onClick={() => setShowDeleteConfirm(true)}
-          className="text-red-600 hover:underline bg-transparent border-0 cursor-pointer p-0 text-sm font-medium"
+          className="cursor-pointer border-0 bg-transparent p-0 text-sm font-medium text-red-600 hover:underline"
         >
           Delete Profile
         </button>
@@ -90,16 +84,13 @@ export default function StudentProfileView() {
       <p>Status: {student.is_active ? "Active" : "Inactive"}</p>
       <p>Joined Date: {student.joined_date}</p>
       <p>Created At: {student.created_at}</p>
-      <Dialog
-        open={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
-      >
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Delete Student Profile</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete student{" "}
-              <strong className="text-foreground font-semibold">
+              <strong className="font-semibold text-foreground">
                 {student.full_name}
               </strong>
               ? This action cannot be undone.

@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import axios from "axios"
+import { createStudent, updateStudent } from "@/services/student"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
@@ -120,17 +120,11 @@ export default function StudentNewEditForm({ currentStudent }: Props = {}) {
 
     try {
       if (currentStudent) {
-        await axios.put(
-          `https://jey-student-api.up.railway.app/api/students/${currentStudent.id}`,
-          payload
-        )
+        await updateStudent(currentStudent.id, payload)
         toast.success("Student information updated successfully!")
         router.push("/students")
       } else {
-        await axios.post(
-          "https://jey-student-api.up.railway.app/api/students",
-          payload
-        )
+        await createStudent(payload)
         toast.success("Student information submitted successfully!")
         form.reset()
         router.push("/students")
@@ -148,7 +142,9 @@ export default function StudentNewEditForm({ currentStudent }: Props = {}) {
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>{currentStudent ? "Edit Student" : "Student Information"}</CardTitle>
+        <CardTitle>
+          {currentStudent ? "Edit Student" : "Student Information"}
+        </CardTitle>
         <CardDescription>
           {currentStudent
             ? "Update the student details below."

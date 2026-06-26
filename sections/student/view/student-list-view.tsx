@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
+import { getStudents, deleteStudent } from "@/services/student"
 import {
   Table,
   TableBody,
@@ -33,10 +33,10 @@ export default function StudentListView() {
     if (!studentToDelete) return
     setIsDeleting(true)
     try {
-      await axios.delete(
-        `https://jey-student-api.up.railway.app/api/students/${studentToDelete.id}`
+      await deleteStudent(studentToDelete.id)
+      toast.success(
+        `Student "${studentToDelete.full_name}" deleted successfully!`
       )
-      toast.success(`Student "${studentToDelete.full_name}" deleted successfully!`)
       setStudentToDelete(null)
       fetchStudents()
     } catch (error) {
@@ -49,20 +49,17 @@ export default function StudentListView() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(
-        "https://jey-student-api.up.railway.app/api/students"
-      )
-      setStudents(response.data.students)
+      const data = await getStudents()
+      setStudents(data.students)
     } catch (error) {
       console.error("Error fetching students:", error)
     }
   }
 
   useEffect(() => {
-    axios
-      .get("https://jey-student-api.up.railway.app/api/students")
-      .then((response) => {
-        setStudents(response.data.students)
+    getStudents()
+      .then((data) => {
+        setStudents(data.students)
       })
       .catch((error) => {
         console.error("Error fetching students:", error)
@@ -96,7 +93,7 @@ export default function StudentListView() {
               <TableCell>{student.email}</TableCell>
               <TableCell className="text-right">{student.cgpa}</TableCell>
               <TableCell className="text-right">
-                <div className="flex justify-end gap-3 items-center">
+                <div className="flex items-center justify-end gap-3">
                   <Link
                     href={`/students/${student.id}`}
                     className="text-blue-500 hover:underline"
@@ -111,7 +108,7 @@ export default function StudentListView() {
                   </Link>
                   <button
                     onClick={() => setStudentToDelete(student)}
-                    className="text-red-600 hover:underline bg-transparent border-0 cursor-pointer p-0 font-medium text-sm"
+                    className="cursor-pointer border-0 bg-transparent p-0 text-sm font-medium text-red-600 hover:underline"
                   >
                     Delete
                   </button>
@@ -132,7 +129,7 @@ export default function StudentListView() {
             <DialogTitle>Delete Student</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete student{" "}
-              <strong className="text-foreground font-semibold">
+              <strong className="font-semibold text-foreground">
                 {studentToDelete?.full_name}
               </strong>
               ? This action cannot be undone.
