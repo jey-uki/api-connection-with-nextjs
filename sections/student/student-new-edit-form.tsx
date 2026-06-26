@@ -122,12 +122,12 @@ export default function StudentNewEditForm({ currentStudent }: Props = {}) {
       if (currentStudent) {
         await updateStudent(currentStudent.id, payload)
         toast.success("Student information updated successfully!")
-        router.push("/students")
+        router.push("/admin/students")
       } else {
         await createStudent(payload)
         toast.success("Student information submitted successfully!")
         form.reset()
-        router.push("/students")
+        router.push("/admin/students")
       }
     } catch (errors) {
       console.error("Error submitting student data:", errors)

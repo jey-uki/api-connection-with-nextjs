@@ -3,6 +3,23 @@
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
+// Suppress the false-positive React 19 warning about script tags inside
+// React components. next-themes intentionally injects an inline <script> to
+// prevent flash-of-unstyled-content (FOUC). The library is unmaintained and
+// has not been updated for React 19, but the script is harmless.
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  const origConsoleError = console.error
+  console.error = (...args: unknown[]) => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes("Encountered a script tag while rendering React component")
+    ) {
+      return
+    }
+    origConsoleError.apply(console, args)
+  }
+}
+
 function ThemeProvider({
   children,
   ...props
@@ -47,7 +64,7 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
+      if (!event.key || event.key.toLowerCase() !== "d") {
         return
       }
 

@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Eye, Pencil, Trash2 } from "lucide-react"
 
 export default function StudentListView() {
   const [students, setStudents] = useState<Student[]>([])
@@ -57,28 +58,16 @@ export default function StudentListView() {
   }
 
   useEffect(() => {
-    getStudents()
-      .then((data) => {
-        setStudents(data.students)
-      })
-      .catch((error) => {
-        console.error("Error fetching students:", error)
-      })
+    fetchStudents()
   }, [])
 
   return (
-    <div className="p-6">
-      <Link
-        href="/"
-        className="mb-4 inline-block text-blue-500 hover:underline"
-      >
-        &larr; Back to Home
-      </Link>
+    <div className="p-2 sm:p-4">
       <Table>
         <TableCaption>A list of students fetched from the API.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">ID</TableHead>
+            <TableHead className="w-[80px]">ID</TableHead>
             <TableHead>Full Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead className="text-right">CGPA</TableHead>
@@ -88,30 +77,30 @@ export default function StudentListView() {
         <TableBody>
           {students.map((student) => (
             <TableRow key={student.id}>
-              <TableCell className="font-medium">{student.id}</TableCell>
-              <TableCell>{student.full_name}</TableCell>
-              <TableCell>{student.email}</TableCell>
-              <TableCell className="text-right">{student.cgpa}</TableCell>
+              <TableCell className="font-medium text-muted-foreground">#{student.id}</TableCell>
+              <TableCell className="font-semibold">{student.full_name}</TableCell>
+              <TableCell className="text-muted-foreground">{student.email}</TableCell>
+              <TableCell className="text-right font-medium">{student.cgpa}</TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-3">
-                  <Link
-                    href={`/students/${student.id}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    View
+                <div className="flex items-center justify-end gap-1">
+                  <Link href={`/admin/students/${student.id}`}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+                      <Eye className="size-4" />
+                    </Button>
                   </Link>
-                  <Link
-                    href={`/students/${student.id}/edit`}
-                    className="text-amber-600 hover:underline"
-                  >
-                    Edit
+                  <Link href={`/admin/students/${student.id}/edit`}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-amber-600">
+                      <Pencil className="size-4" />
+                    </Button>
                   </Link>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     onClick={() => setStudentToDelete(student)}
-                    className="cursor-pointer border-0 bg-transparent p-0 text-sm font-medium text-red-600 hover:underline"
                   >
-                    Delete
-                  </button>
+                    <Trash2 className="size-4" />
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
