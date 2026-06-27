@@ -46,6 +46,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: Users,
       roles: ["admin", "lecturer"],
     },
+    {
+      title: "Course Directory",
+      href: "/admin/courses",
+      icon: BookOpen,
+      roles: ["admin", "lecturer"],
+    },
   ]
 
   // Filter items based on user's role
