@@ -1,3 +1,5 @@
+"use client"
+
 import StudentListView from "@/sections/student/view/student-list-view"
 import React from "react"
 import { AuthenticatedRoute } from "@/components/auth-guard"
@@ -13,7 +15,7 @@ export default function AdminStudentListPage() {
           <div className="space-y-1">
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Student Directory</h1>
             <p className="text-muted-foreground text-sm">
-              List of all student records. View, edit, or delete student profiles.
+              List of all student records. View, edit, import, export, or delete student profiles.
             </p>
           </div>
           <Link href="/admin/students/new">

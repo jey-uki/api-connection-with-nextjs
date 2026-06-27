@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { deleteCourse, getCourses } from "@/services/course"
+import { deleteCourse, getCourses, exportCourses, importCourses } from "@/services/course"
+import { ImportExportToolbar } from "@/components/import-export-toolbar"
 import { Course } from "@/types/course"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -16,7 +17,7 @@ import {
 import { createColumns } from "../columns"
 import { DataTable } from "../data-table"
 
-export default function CourseListView() {
+export default function CourseListView({ refreshKey = 0 }: { refreshKey?: number }) {
   const [courses, setCourses] = useState<Course[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null)
@@ -72,6 +73,14 @@ export default function CourseListView() {
 
   return (
     <>
+      <div className="mb-4 flex justify-end">
+        <ImportExportToolbar
+          entityLabel="Courses"
+          onExport={exportCourses}
+          onImport={importCourses}
+          onImportComplete={fetchCourses}
+        />
+      </div>
       <DataTable columns={columns} data={courses} />
       <Dialog
         open={!!courseToDelete}

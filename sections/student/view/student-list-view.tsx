@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getStudents, deleteStudent } from "@/services/student"
+import { getStudents, deleteStudent, exportStudents, importStudents } from "@/services/student"
+import { ImportExportToolbar } from "@/components/import-export-toolbar"
 import {
   Table,
   TableBody,
@@ -25,7 +26,7 @@ import {
 } from "@/components/ui/dialog"
 import { Eye, Pencil, Trash2 } from "lucide-react"
 
-export default function StudentListView() {
+export default function StudentListView({ refreshKey = 0 }: { refreshKey?: number }) {
   const [students, setStudents] = useState<Student[]>([])
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -63,6 +64,14 @@ export default function StudentListView() {
 
   return (
     <div className="p-2 sm:p-4">
+      <div className="mb-4 flex justify-end">
+        <ImportExportToolbar
+          entityLabel="Students"
+          onExport={exportStudents}
+          onImport={importStudents}
+          onImportComplete={fetchStudents}
+        />
+      </div>
       <Table>
         <TableCaption>A list of students fetched from the API.</TableCaption>
         <TableHeader>

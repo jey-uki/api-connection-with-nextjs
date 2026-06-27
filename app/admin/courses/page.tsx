@@ -10,7 +10,7 @@ export default function AdminCoursesPage() {
             Course Directory
           </h1>
           <p className="text-sm text-muted-foreground">
-            Browse, search, and manage all courses in the curriculum.
+            Browse, search, import, export, and manage all courses in the curriculum.
           </p>
         </div>
         <div className="rounded-xl border bg-card p-4 shadow-xs sm:p-6">
