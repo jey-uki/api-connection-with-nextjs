@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState } from "react"
+import React, { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import apiClient from "@/lib/api-client"
 
@@ -23,27 +23,28 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("user")
-      if (storedUser) {
-        try {
-          return JSON.parse(storedUser)
-        } catch (e) {
-          console.error("Failed to parse user from localStorage", e)
-        }
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token")
+    const storedUser = localStorage.getItem("user")
+
+    if (storedToken && storedUser) {
+      try {
+        setToken(storedToken)
+        setUser(JSON.parse(storedUser))
+      } catch (e) {
+        console.error("Failed to parse user from localStorage", e)
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
       }
     }
-    return null
-  })
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("token")
-    }
-    return null
-  })
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+
+    setLoading(false)
+  }, [])
 
   const login = async (email: string, password: string) => {
     const response = await apiClient.post("/api/auth/login", { email, password })

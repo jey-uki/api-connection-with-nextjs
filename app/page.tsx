@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 
 export default function LandingPage() {
-  const { user, logout } = useAuth()
+  const { user, logout, loading } = useAuth()
   const { theme, setTheme } = useTheme()
 
   return (
@@ -59,7 +59,7 @@ export default function LandingPage() {
             </Button>
 
             {/* Authentication Action Buttons */}
-            {!user ? (
+            {loading || !user ? (
               <div className="flex items-center gap-2">
                 <Link href="/auth/login">
                   <Button variant="ghost" size="sm" className="font-semibold text-sm">
